@@ -34,6 +34,7 @@ interface AirQualityData {
 
 import { MutableRefObject } from 'react';
 import L, { Map as LeafletMap, CircleMarker } from 'leaflet';
+import SemiGauge from "./semi-gauge";
 
 interface AirQualityModalProps {
     open: boolean;
@@ -186,6 +187,19 @@ export function AirQualityModal({ open, onOpenChange, city, mapRef, markerRef }:
 
     const latestData = airQualityData?.data[0];
     const aqiStatus = latestData?.pm25 !== undefined ? getAqiStatus(latestData.pm25) : null;
+    
+    // Get current AQI level for highlighting
+    const getAqiLevel = (aqi: number) => {
+        if (aqi <= 50) return 'good';
+        if (aqi <= 100) return 'moderate';
+        if (aqi <= 150) return 'sensitive';
+        if (aqi <= 200) return 'unhealthy';
+        if (aqi <= 300) return 'very-unhealthy';
+        return 'hazardous';
+    };
+    
+    const currentAqi = latestData?.aqi || 0;
+    const currentAqiLevel = getAqiLevel(currentAqi);
     const getAqiDescription = (aqi: number): string => {
         if (aqi <= 50) return 'Good';
         if (aqi <= 100) return 'Moderate';
@@ -222,18 +236,19 @@ export function AirQualityModal({ open, onOpenChange, city, mapRef, markerRef }:
                     <div className="space-y-6">
                         <div className="space-y-4">
                             {/* AQI Card */}
-                            <div className="bg-[#18314F]/50 p-4 rounded-lg border border-white/10">
-                                <h3 className="text-sm font-medium text-white/80 mb-2">Air Quality Index (AQI)</h3>
-                                <div className="flex items-center gap-4">
-                                    <div className="text-4xl font-bold">
-                                        {latestData?.aqi || 'N/A'}
-                                    </div>
-                                    <div>
-                                        <div className={`text-lg font-medium ${aqiStatus?.color || 'text-white'}`}>
-                                            {latestData ? getAqiDescription(latestData.aqi) : 'N/A'}
-                                        </div>
-                                        <div className="text-sm text-white/60">
-                                            {airQualityData.city_name}, {airQualityData.state_code}
+                            <div className="bg-[#18314F]/50 p-6 rounded-lg border border-white/10">
+                                <h3 className="text-sm font-medium text-white/80 mb-4 text-center">Air Quality Index (AQI)</h3>
+                                <div className="flex flex-col items-center">
+                                    <div className="flex flex-col items-center">
+                                        <div className="flex justify-center">
+                                            <SemiGauge 
+                                                value={latestData?.aqi || 0} 
+                                                size={200}
+                                                min={0}
+                                                max={300}
+                                                label={aqiStatus?.status}
+                                                color={aqiStatus?.color}
+                                            />
                                         </div>
                                     </div>
                                 </div>
@@ -285,29 +300,53 @@ export function AirQualityModal({ open, onOpenChange, city, mapRef, markerRef }:
                         <div className="space-y-2">
                             <h3 className="font-medium">Air Quality Index (AQI) Scale:</h3>
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
-                                <div className="bg-green-500/20 p-2 rounded">
+                                <div className={`p-2 rounded transition-all duration-200 ${
+                                    currentAqiLevel === 'good' 
+                                        ? 'bg-green-500/40 ring-2 ring-green-400/50' 
+                                        : 'bg-green-500/20 hover:bg-green-500/30'
+                                }`}>
                                     <div className="font-medium">0-50: Good</div>
-                                    <div className="text-white/60">Air quality is satisfactory</div>
+                                    <div className={currentAqiLevel === 'good' ? 'text-white/90' : 'text-white/60'}>Air quality is satisfactory</div>
                                 </div>
-                                <div className="bg-yellow-500/20 p-2 rounded">
+                                <div className={`p-2 rounded transition-all duration-200 ${
+                                    currentAqiLevel === 'moderate' 
+                                        ? 'bg-yellow-500/40 ring-2 ring-yellow-400/50' 
+                                        : 'bg-yellow-500/20 hover:bg-yellow-500/30'
+                                }`}>
                                     <div className="font-medium">51-100: Moderate</div>
-                                    <div className="text-white/60">Acceptable quality</div>
+                                    <div className={currentAqiLevel === 'moderate' ? 'text-white/90' : 'text-white/60'}>Acceptable quality</div>
                                 </div>
-                                <div className="bg-orange-500/20 p-2 rounded">
+                                <div className={`p-2 rounded transition-all duration-200 ${
+                                    currentAqiLevel === 'sensitive' 
+                                        ? 'bg-orange-500/40 ring-2 ring-orange-400/50' 
+                                        : 'bg-orange-500/20 hover:bg-orange-500/30'
+                                }`}>
                                     <div className="font-medium">101-150: Sensitive Groups</div>
-                                    <div className="text-white/60">Unhealthy for sensitive groups</div>
+                                    <div className={currentAqiLevel === 'sensitive' ? 'text-white/90' : 'text-white/60'}>Unhealthy for sensitive groups</div>
                                 </div>
-                                <div className="bg-red-500/20 p-2 rounded">
+                                <div className={`p-2 rounded transition-all duration-200 ${
+                                    currentAqiLevel === 'unhealthy' 
+                                        ? 'bg-red-500/40 ring-2 ring-red-400/50' 
+                                        : 'bg-red-500/20 hover:bg-red-500/30'
+                                }`}>
                                     <div className="font-medium">151-200: Unhealthy</div>
-                                    <div className="text-white/60">Health effects possible</div>
+                                    <div className={currentAqiLevel === 'unhealthy' ? 'text-white/90' : 'text-white/60'}>Health effects possible</div>
                                 </div>
-                                <div className="bg-purple-500/20 p-2 rounded">
+                                <div className={`p-2 rounded transition-all duration-200 ${
+                                    currentAqiLevel === 'very-unhealthy' 
+                                        ? 'bg-purple-500/40 ring-2 ring-purple-400/50' 
+                                        : 'bg-purple-500/20 hover:bg-purple-500/30'
+                                }`}>
                                     <div className="font-medium">201-300: Very Unhealthy</div>
-                                    <div className="text-white/60">Health warnings</div>
+                                    <div className={currentAqiLevel === 'very-unhealthy' ? 'text-white/90' : 'text-white/60'}>Health warnings</div>
                                 </div>
-                                <div className="bg-maroon-500/20 p-2 rounded">
+                                <div className={`p-2 rounded transition-all duration-200 ${
+                                    currentAqiLevel === 'hazardous' 
+                                        ? 'bg-maroon-500/40 ring-2 ring-maroon-400/50' 
+                                        : 'bg-maroon-500/20 hover:bg-maroon-500/30'
+                                }`}>
                                     <div className="font-medium">301-500: Hazardous</div>
-                                    <div className="text-white/60">Health alert</div>
+                                    <div className={currentAqiLevel === 'hazardous' ? 'text-white/90' : 'text-white/60'}>Health alert</div>
                                 </div>
                             </div>
                         </div>
