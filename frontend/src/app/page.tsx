@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import LandbotChat from "./bot";
 
 const palette = {
   midnight: "#0A0424",
@@ -135,6 +136,7 @@ export default function Home(): JSX.Element {
       </section>
 
       <hr data-test="section-divider" className="border-t-4 border-white my-8 w-11/12 mx-auto opacity-80" />
+      <LandbotChat />
     </main>
   );
 }
