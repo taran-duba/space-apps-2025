@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { JSX, useEffect } from "react";
 import { motion, type Variants } from "framer-motion";
 import {
   ArrowRight,
