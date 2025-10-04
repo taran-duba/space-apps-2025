@@ -15,6 +15,7 @@ import {
   Database,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 const palette = {
   midnight: "#0A0424",
@@ -71,8 +72,12 @@ export default function Home(): JSX.Element {
             ))}
           </nav>
           <div className="flex items-center gap-3">
-            <Button className="hidden md:inline-flex" style={{ backgroundColor: palette.sea, color: palette.deep }}>Sign In</Button>
-            <Button className="inline-flex" style={{ backgroundColor: palette.ice, color: palette.deep }}>Get Started<ArrowRight className="ml-2 h-4 w-4" /></Button>
+            <Link href="/login" passHref>
+              <Button className="hidden md:inline-flex" style={{ backgroundColor: palette.sea, color: palette.deep }}>Sign In</Button>
+            </Link>
+            <Link href="/login" passHref>
+              <Button className="inline-flex" style={{ backgroundColor: palette.ice, color: palette.deep }}>Get Started<ArrowRight className="ml-2 h-4 w-4" /></Button>
+            </Link>
           </div>
         </div>
       </header>
