@@ -2,15 +2,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import feedparser
 import dotenv
-from google import genai
+import google.generativeai as genai
 import os
 
 dotenv.load_dotenv()
 import requests
 
 app = FastAPI(
-    title="Space Apps 2025 API",
-    description="Backend API for Space Apps 2025 project",
+    title="Environauts API",
+    description="Backend API for Clairify",
     version="0.1.0"
 )
 
