@@ -15,6 +15,7 @@ import {
   Database,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 const palette = {
   midnight: "#0A0424",
@@ -55,28 +56,10 @@ export default function Home(): JSX.Element {
   const bgUrl = "/earth-overlay.jpg";
 
   return (
-    <main className="min-h-screen text-white relative">
+    <main className="min-h-screen text-white relative pt-16">
       <div aria-hidden data-bg="earth" className="fixed inset-0 -z-20" style={{ backgroundImage: `url(${bgUrl})`, backgroundSize: "cover", backgroundPosition: "center" }} />
       <div aria-hidden data-bg="veil" className="fixed inset-0 -z-10" style={{ background: `linear-gradient(0deg, rgba(10,4,36,0.72), rgba(10,4,36,0.72))` }} />
-
-      <header className="sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-white/0">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <a href="#" className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-2xl" style={{ background: `conic-gradient(from 180deg at 50% 50%, ${palette.ice}, ${palette.sea}, ${palette.steel}, ${palette.ice})` }} />
-            <span className="text-lg font-semibold tracking-tight" style={{ color: palette.ice }}>Environauts Presents...</span>
-          </a>
-          <nav className="hidden gap-8 md:flex">
-            {([ ["About Us", "#about"], ["Features", "#features"], ["FAQ", "#faq"], ["Contact Us", "#contact"] ] as const).map(([label, href]) => (
-              <a key={label} href={href} className="text-sm text-white/80 transition hover:text-white">{label}</a>
-            ))}
-          </nav>
-          <div className="flex items-center gap-3">
-            <Button className="hidden md:inline-flex" style={{ backgroundColor: palette.sea, color: palette.deep }}>Sign In</Button>
-            <Button className="inline-flex" style={{ backgroundColor: palette.ice, color: palette.deep }}>Get Started<ArrowRight className="ml-2 h-4 w-4" /></Button>
-          </div>
-        </div>
-      </header>
-
+      
       <section className="relative overflow-hidden">
         <div className="mx-auto grid max-w-7xl gap-10 px-6 pb-20 pt-16 lg:grid-cols-2 lg:gap-14 lg:pb-28 lg:pt-24">
           <motion.div initial="hidden" animate="show" variants={fadeUp}>
@@ -86,8 +69,12 @@ export default function Home(): JSX.Element {
             <h1 className="max-w-3xl text-4xl font-semibold leading-tight tracking-tight sm:text-6xl">Here to help you breathe, clear.</h1>
             <p className="mt-6 max-w-2xl text-lg leading-relaxed text-white/80">We're here to make sure you can do anything— and not while irritating your lungs. Using data from NASA to <em>Clairify</em> your safety, we ensure your comfort in knowing that the air you breathe is clean.</p>
             <div className="mt-10 flex flex-wrap items-center gap-4">
-              <Button size="lg" className="rounded-2xl px-8 py-6 text-base" style={{ backgroundColor: palette.ice, color: palette.deep }}>Find my Location<Globe className="ml-2 h-5 w-5" /></Button>
-              <Button size="lg" variant="outline" className="rounded-2xl border px-8 py-6 text-base" style={{ borderColor: palette.sea, color: palette.ice, background: "transparent" }}>Database of Respiratory Illness<ArrowRight className="ml-2 h-5 w-5" /></Button>
+              <Link href="/location-services">
+                <Button size="lg" className="rounded-2xl px-8 py-6 text-base" style={{ backgroundColor: palette.ice, color: palette.deep }}>Find My Location<Globe className="ml-2 h-5 w-5" /></Button>
+              </Link>
+              <Link href="/diseases">
+                <Button size="lg" variant="outline" className="rounded-2xl border px-8 py-6 text-base" style={{ borderColor: palette.sea, color: palette.ice, background: "transparent" }}>Database of Respiratory Illness<ArrowRight className="ml-2 h-5 w-5" /></Button>
+              </Link>
             </div>
           </motion.div>
         </div>
