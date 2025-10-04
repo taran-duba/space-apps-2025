@@ -26,6 +26,12 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        style={{
+          backgroundImage:
+            "url('https://eoimages.gsfc.nasa.gov/images/imagerecords/8000/8108/ipcc_bluemarble_west_front.jpg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
       >
         {children}
       </body>
