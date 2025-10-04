@@ -1,73 +1,76 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import requests
 
-import datetime as dt
-import os
-import numpy as np
-import xarray as xr
-import cartopy.crs as ccrs
-import cartopy.feature as cfeature
-import matplotlib.pyplot as plt
-from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
-from xarray.plot.utils import label_from_attrs
-
-import dotenv
-
-dotenv.load_dotenv()
-
-from harmony import BBox, Client, Collection, Request
-from harmony.config import Environment
-
-harmony_client = Client(env=Environment.PROD, auth=(os.getenv("NASA_EARTHDATA_USERNAME"), os.getenv("NASA_EARTHDATA_PASSWORD")))
-
-# ✅ Use MODIS Terra AOD 500nm collection
-request = Request(
-    collection=Collection(id="C1617947590-LAADS"),  # Terra MODIS AOD 500nm L2
-    granule_name=["MOD04_L2.A2025279.1755.061.2025279223027.hdf"],  # Example granule
+app = FastAPI(
+    title="Space Apps 2025 API",
+    description="Backend API for Space Apps 2025 project",
+    version="0.1.0"
 )
 
-# Validate request
-request.is_valid()
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, replace with your frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-# Submit Harmony request
-job_id = harmony_client.submit(request)
-print(f"jobID = {job_id}")
+@app.get("/")
+async def read_root():
+    return {"message": "Welcome to the Environauts' API"}
 
-# Wait for processing
-harmony_client.wait_for_processing(job_id, show_progress=True)
+@app.get("/status")
+async def health_check():
+    return {"status": "200 OK"}
 
-# Download results
-results = harmony_client.download_all(job_id, directory="/tmp")
-all_results_stored = [f.result() for f in results]
-
-print(f"Number of result files: {len(all_results_stored)}")
-
-# Open the downloaded granule
-datatree = xr.open_dataset(all_results_stored[0])
-print(datatree)
-
-
-
-
-# app = FastAPI(
-#     title="Space Apps 2025 API",
-#     description="Backend API for Space Apps 2025 project",
-#     version="0.1.0"
-# )
-
-# # Configure CORS
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=["*"],  # In production, replace with your frontend URL
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
-
-# @app.get("/")
-# async def read_root():
-#     return {"message": "Welcome to Space Apps 2025 API"}
-
-# @app.get("/health")
-# async def health_check():
-#     return {"status": "healthy"}
+@app.get("/aqi/{city}")
+async def get_aqi(city: str):
+    # Get coordinates for the city using Open-Meteo Geocoding API (free, no API key required)
+    geo_url = "https://geocoding-api.open-meteo.com/v1/search"
+    geo_params = {
+        "name": city,
+        "count": 1,
+        "language": "en",
+        "format": "json"
+    }
+    
+    try:
+        geo_response = requests.get(geo_url, params=geo_params)
+        geo_response.raise_for_status()
+        location_data = geo_response.json()
+        
+        if not location_data:
+            return {"error": "City not found"}, 404
+            
+        if not location_data.get('results'):
+            return {"error": "City not found"}, 404
+            
+        lat = location_data['results'][0]['latitude']
+        lon = location_data['results'][0]['longitude']
+        
+        # Get AQI data using the coordinates
+        aqi_url = "https://air-quality-api.open-meteo.com/v1/air-quality"
+        aqi_params = {
+            "latitude": lat,
+            "longitude": lon,
+            "hourly": "pm10,pm2_5"
+        }
+        
+        aqi_response = requests.get(aqi_url, params=aqi_params)
+        aqi_response.raise_for_status()
+        aqi_data = aqi_response.json()
+        
+        # Add location info to the response
+        aqi_data["location"] = {
+            "city": city,
+            "latitude": lat,
+            "longitude": lon
+        }
+        
+        return aqi_data
+        
+    except requests.exceptions.RequestException as e:
+        return {"error": f"Error fetching data: {str(e)}"}, 500
+    
