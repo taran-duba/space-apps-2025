@@ -127,7 +127,7 @@ export default function Home(): JSX.Element {
           <p className="mt-2 max-w-2xl text-white/80">We&apos;d love to hear from you! Reach out through any of the platforms below.</p>
           <div className="mt-6 flex flex-col items-center gap-6 sm:flex-row sm:justify-center">
             <a href="mailto:environautsfaq@gmail.com" className="flex items-center gap-2 text-white/80 transition hover:text-white"><Mail className="h-5 w-5" /> environautsfaq@gmail.com</a>
-            <a href="#" className="flex items-center gap-2 text-white/80 transition hover:text-white"><Github className="h-5 w-5" /> GitHub</a>
+            <a href="https://github.com/taran-duba/space-apps-2025" className="flex items-center gap-2 text-white/80 transition hover:text-white"><Github className="h-5 w-5" /> GitHub</a>
             <a href="#" className="flex items-center gap-2 text-white/80 transition hover:text-white"><Linkedin className="h-5 w-5" /> LinkedIn</a>
           </div>
         </div>
