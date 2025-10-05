@@ -4,8 +4,6 @@ import React, { JSX, useEffect } from "react";
 import { motion, type Variants } from "framer-motion";
 import {
   ArrowRight,
-  Star,
-  Shield,
   Globe,
   Github,
   Linkedin,
