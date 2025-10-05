@@ -19,6 +19,8 @@ export default function IpLocationPage(): JSX.Element {
   useEffect(() => {
     if (mapRef.current || !mapElRef.current) return;
 
+    if (typeof window === "undefined") return;
+
     const map = L.map(mapElRef.current, { minZoom: 2, zoomControl: true }).setView(
       [20, 0],
       2
