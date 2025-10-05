@@ -352,7 +352,7 @@ export function AirQualityModal({ open, onOpenChange, city, mapRef, markerRef }:
                         </div>
 
                         <div className="text-xs text-white/60 italic">
-                            <p>Data provided by NASA's Earth Observing System Data and Information System (EOSDIS)</p>
+                            <p>Data provided by NASA&apos;s Earth Observing System Data and Information System (EOSDIS)</p>
                             <p>Last updated: {new Date().toLocaleString()}</p>
                         </div>
                     </div>
