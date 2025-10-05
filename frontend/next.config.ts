@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
   },
   // Enable React Strict Mode for better development experience
   reactStrictMode: true,
+  output: "standalone"
 };
 
 export default nextConfig;
