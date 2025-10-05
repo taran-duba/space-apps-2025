@@ -4,8 +4,6 @@ import React, { JSX, useEffect } from "react";
 import { motion, type Variants } from "framer-motion";
 import {
   ArrowRight,
-  Star,
-  Shield,
   Globe,
   Github,
   Linkedin,
@@ -68,7 +66,7 @@ export default function Home(): JSX.Element {
               <h2 className="text-7xl sm:text-8xl font-extrabold tracking-tight text-transparent" style={{ WebkitTextStroke: `2px ${palette.ice}`, color: "transparent" }}>CLAIRIFY</h2>
             </div>
             <h1 className="max-w-3xl text-4xl font-semibold leading-tight tracking-tight sm:text-6xl">Here to help you breathe, clear.</h1>
-            <p className="mt-6 max-w-2xl text-lg leading-relaxed text-white/80">We're here to make sure you can do anything— and not while irritating your lungs. Using data from NASA to <em>Clairify</em> your safety, we ensure your comfort in knowing that the air you breathe is clean.</p>
+            <p className="mt-6 max-w-2xl text-lg leading-relaxed text-white/80">We&apos;re here to make sure you can do anything— and not while irritating your lungs. Using data from NASA to <em>Clairify</em> your safety, we ensure your comfort in knowing that the air you breathe is clean.</p>
             <div className="mt-10 flex flex-wrap items-center gap-4">
               <Link href="/location-services">
                 <Button size="lg" className="rounded-2xl px-8 py-6 text-base" style={{ backgroundColor: palette.ice, color: palette.deep }}>Find My Location<Globe className="ml-2 h-5 w-5" /></Button>
@@ -126,7 +124,7 @@ export default function Home(): JSX.Element {
       <section id="contact" className="relative">
         <div className="mx-auto max-w-5xl px-6 py-16">
           <h2 className="text-2xl font-semibold tracking-tight">Contact Us</h2>
-          <p className="mt-2 max-w-2xl text-white/80">We'd love to hear from you! Reach out through any of the platforms below.</p>
+          <p className="mt-2 max-w-2xl text-white/80">We&apos;d love to hear from you! Reach out through any of the platforms below.</p>
           <div className="mt-6 flex flex-col items-center gap-6 sm:flex-row sm:justify-center">
             <a href="mailto:environautsfaq@gmail.com" className="flex items-center gap-2 text-white/80 transition hover:text-white"><Mail className="h-5 w-5" /> environautsfaq@gmail.com</a>
             <a href="#" className="flex items-center gap-2 text-white/80 transition hover:text-white"><Github className="h-5 w-5" /> GitHub</a>

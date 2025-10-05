@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, FormEvent, Suspense } from "react";
+import React, { useState, useEffect, FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "@/app/actions/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,20 +10,9 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { toast } from "sonner";
 
-// Helper component to safely read search params within a Suspense boundary
-function RedirectFromParams({ setRedirectTo }: { setRedirectTo: React.Dispatch<React.SetStateAction<string>> }) {
-  const searchParams = useSearchParams();
-
-  useEffect(() => {
-    const redirectedFrom = searchParams.get("redirectedFrom");
-    if (redirectedFrom) setRedirectTo(redirectedFrom);
-  }, [searchParams, setRedirectTo]);
-
-  return null;
-}
-
-export default function LoginPage() {
+export default function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams(); // ✅ safe now
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,7 +20,10 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [redirectTo, setRedirectTo] = useState("/dashboard");
 
-  // Search params are handled in the Suspense-wrapped helper above
+  useEffect(() => {
+    const redirectedFrom = searchParams.get("redirectedFrom");
+    if (redirectedFrom) setRedirectTo(redirectedFrom);
+  }, [searchParams]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -62,10 +54,6 @@ export default function LoginPage() {
           <CardTitle className="text-center text-2xl">Login</CardTitle>
         </CardHeader>
         <CardContent>
-          {/* Suspense boundary required for hooks like useSearchParams during prerender */}
-          <Suspense fallback={null}>
-            <RedirectFromParams setRedirectTo={setRedirectTo} />
-          </Suspense>
           <form onSubmit={handleSubmit} className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="email" className="text-white">Email</Label>
