@@ -2,9 +2,15 @@
 
 import { useEffect } from "react";
 
+declare global {
+  interface Window {
+    Landbot: any; // We'll use any here since we don't have the Landbot types
+  }
+}
+
 const LandbotChat = () => {
   useEffect(() => {
-    let myLandbot: any;
+    let myLandbot: any = null; // Using any since we can't properly type the Landbot instance
 
     const initLandbot = () => {
       if (!myLandbot) {
@@ -13,7 +19,7 @@ const LandbotChat = () => {
         s.async = true;
 
         s.addEventListener("load", () => {
-          // @ts-ignore — Landbot is injected globally
+          // @ts-expect-error — Landbot is injected globally
           myLandbot = new Landbot.Livechat({
             configUrl:
               "https://storage.googleapis.com/landbot.site/v3/H-3165706-PTVYK7T5ZTFT17I2/index.json",
