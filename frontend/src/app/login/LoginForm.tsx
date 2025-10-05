@@ -20,6 +20,7 @@ export default function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [redirectTo, setRedirectTo] = useState("/dashboard");
   const [showUnverifiedNote, setShowUnverifiedNote] = useState(false);
+  const [showBadPasswordNote, setShowBadPasswordNote] = useState(false);
 
   useEffect(() => {
     const redirectedFrom = searchParams.get("redirectedFrom");
@@ -36,6 +37,9 @@ export default function LoginForm() {
         const looksUnverified =
           errorCode === 'email_not_confirmed' || /confirm/i.test(error);
         setShowUnverifiedNote(looksUnverified);
+        const looksBadPassword =
+          errorCode === 'invalid_credentials' || /invalid|password/i.test(error);
+        setShowBadPasswordNote(looksBadPassword);
         toast.error(error);
         return;
       }
@@ -61,6 +65,11 @@ export default function LoginForm() {
           {showUnverifiedNote && (
             <div className="mb-4 rounded-md border border-amber-300/60 bg-amber-100/10 px-3 py-2 text-amber-200">
               Please verify your email to sign in. Check your inbox for the confirmation link.
+            </div>
+          )}
+          {showBadPasswordNote && (
+            <div className="mb-4 rounded-md border border-red-300/60 bg-red-100/10 px-3 py-2 text-red-200">
+              Incorrect email or password. Please try again.
             </div>
           )}
           <form onSubmit={handleSubmit} className="grid gap-4">
