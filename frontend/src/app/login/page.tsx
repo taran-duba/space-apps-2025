@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { useState, FormEvent } from "react";
-import { useRouter } from "next/navigation";
+import { useState, FormEvent, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "@/app/actions/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -24,10 +24,20 @@ export type LoginPageProps = {
  */
 const LoginPage: React.FC<LoginPageProps> = ({ onSubmit, onSignUpClick }) => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [redirectTo, setRedirectTo] = useState("/dashboard");
+
+  // Get the redirect URL from query params if it exists
+  useEffect(() => {
+    const redirectedFrom = searchParams.get('redirectedFrom');
+    if (redirectedFrom) {
+      setRedirectTo(redirectedFrom);
+    }
+  }, [searchParams]);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -47,7 +57,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onSubmit, onSignUpClick }) => {
       }
       
       toast.success("Successfully signed in!");
-      router.push("/dashboard");
+      router.push(redirectTo);
       router.refresh();
     } catch (error) {
       console.error("Login error:", error);
