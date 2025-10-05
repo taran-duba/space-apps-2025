@@ -9,7 +9,6 @@ export default function IpLocationPage(): JSX.Element {
   const [city, setCity] = useState("");
   const [region, setRegion] = useState("");
   const [country, setCountry] = useState("");
-  const [status, setStatus] = useState("Detecting via IP...");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const mapRef = useRef<LeafletMap | null>(null);
@@ -43,7 +42,6 @@ export default function IpLocationPage(): JSX.Element {
   useEffect(() => {
     const detectViaIP = async () => {
       try {
-        setStatus("Detecting via IP...");
         const resp = await fetch("https://ipapi.co/json/");
         if (!resp.ok) throw new Error("IP lookup failed");
         const data = await resp.json();
@@ -72,9 +70,7 @@ export default function IpLocationPage(): JSX.Element {
           }
           mapRef.current.flyTo([lat, lon], 13, { animate: true });
         }
-        setStatus(`Location found: ${data.city}`);
       } catch (e) {
-        setStatus("Location detection failed.");
         console.error(e);
       }
     };
@@ -86,7 +82,6 @@ export default function IpLocationPage(): JSX.Element {
     setCity("");
     setRegion("");
     setCountry("");
-    setStatus("Cleared.");
     if (mapRef.current) {
       if (markerRef.current) {
         mapRef.current.removeLayer(markerRef.current);
