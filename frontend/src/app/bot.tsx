@@ -2,15 +2,23 @@
 
 import { useEffect } from "react";
 
+// Type for Landbot instance
+interface LandbotInstance {
+  on: (event: string, callback: (data: unknown) => void) => void;
+}
+
+// Extend Window interface
 declare global {
   interface Window {
-    Landbot: any; // We'll use any here since we don't have the Landbot types
+    Landbot?: {
+      Livechat: new (options: unknown) => LandbotInstance;
+    };
   }
 }
 
 const LandbotChat = () => {
   useEffect(() => {
-    let myLandbot: any = null; // Using any since we can't properly type the Landbot instance
+    let myLandbot: LandbotInstance | null = null;
 
     const initLandbot = () => {
       if (!myLandbot) {
