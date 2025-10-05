@@ -11,26 +11,36 @@ import {
 } from "@/components/ui/dialog";
 import SemiGauge from "./semi-gauge";
 
+// Open-Meteo Air Quality API response structure
 interface AirQualityData {
-  city_name: string;
-  country_code: string;
-  data: Array<{
-    aqi: number;
-    co: number;
-    datetime: string;
-    no2: number;
-    o3: number;
-    pm10: number;
-    pm25: number;
-    so2: number;
-    timestamp_local: string;
-    timestamp_utc: string;
-    ts: number;
-  }>;
-  lat: number;
-  lon: number;
-  state_code: string;
+  latitude: number;
+  longitude: number;
+  generationtime_ms: number;
+  utc_offset_seconds: number;
   timezone: string;
+  timezone_abbreviation: string;
+  elevation: number;
+  current_units: {
+    time: string;
+    interval: string;
+    us_aqi: string;
+  };
+  current: {
+    time: string;
+    interval: number;
+    us_aqi: number;
+    pm2_5: number;
+  };
+  hourly_units: {
+    time: string;
+    us_aqi: string;
+    pm2_5: string;
+  };
+  hourly: {
+    time: string[];
+    us_aqi: number[];
+    pm2_5: number[];
+  };
 }
 
 interface AirQualityModalProps {
@@ -77,48 +87,33 @@ export function AirQualityModal({
 
         const { latitude, longitude } = results[0];
 
-        // Ensure API key exists
-        if (!process.env.NEXT_PUBLIC_RAPIDAPI_KEY) {
-          throw new Error(
-            "NEXT_PUBLIC_RAPIDAPI_KEY environment variable is missing"
-          );
-        }
-
+        // Fetch air quality from Open-Meteo
         const response = await axios.get(
-          "https://air-quality.p.rapidapi.com/history/airquality",
+          "https://air-quality-api.open-meteo.com/v1/air-quality",
           {
-            params: { lat: latitude, lon: longitude },
-            headers: {
-              "x-rapidapi-key": process.env.NEXT_PUBLIC_RAPIDAPI_KEY,
-              "x-rapidapi-host":
-                process.env.NEXT_PUBLIC_RAPIDAPI_HOST ||
-                "air-quality.p.rapidapi.com",
-              "Content-Type": "application/json",
+            params: {
+              latitude,
+              longitude,
+              current: "us_aqi",
+              hourly: "pm2_5,us_aqi",
+              timezone: "auto",
             },
             timeout: 15000,
             validateStatus: (status) => status < 500,
           }
         );
 
-        if (!response.data?.data || !Array.isArray(response.data.data)) {
+        if (!response.data || typeof response.data !== "object") {
           throw new Error("Invalid API response format");
         }
 
-        const data: AirQualityData = {
-          city_name: city,
-          country_code: "US",
-          data: response.data.data,
-          lat: latitude,
-          lon: longitude,
-          state_code: "",
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        };
+        const data: AirQualityData = response.data as AirQualityData;
 
         setAirQualityData(data);
 
         // Update Leaflet map if refs exist
         if (mapRef?.current) {
-          const latLng: [number, number] = [data.lat, data.lon];
+          const latLng: [number, number] = [latitude, longitude];
 
           if (markerRef) {
             if (markerRef.current) {
@@ -138,9 +133,7 @@ export function AirQualityModal({
           mapRef.current.flyTo(latLng, 13, { animate: true });
 
           if (markerRef?.current && !markerRef.current.getPopup()) {
-            markerRef.current
-              .bindPopup(`${data.city_name}, ${data.state_code}`)
-              .openPopup();
+            markerRef.current.bindPopup(`${city}`).openPopup();
           }
         }
       } catch (err: unknown) {
@@ -165,8 +158,6 @@ export function AirQualityModal({
     fetchAirQuality();
   }, [open, city, mapRef, markerRef]);
 
-  const latestData = airQualityData?.data[0];
-
   const getAqiStatus = (pm25: number) => {
     if (pm25 <= 12) return { status: "Good", color: "text-green-500" };
     if (pm25 <= 35.4) return { status: "Moderate", color: "text-yellow-500" };
@@ -177,7 +168,20 @@ export function AirQualityModal({
     return { status: "Hazardous", color: "text-maroon-500" };
   };
 
-  const aqiStatus = latestData?.pm25 !== undefined ? getAqiStatus(latestData.pm25) : null;
+  // Determine latest PM2.5 value (prefer current, fallback to last hourly)
+  const latestPm25: number | null = (() => {
+    if (airQualityData?.current?.pm2_5 !== undefined) return airQualityData.current.pm2_5!;
+    const arr = airQualityData?.hourly?.pm2_5;
+    if (arr && arr.length) {
+      for (let i = arr.length - 1; i >= 0; i--) {
+        const v = arr[i];
+        if (v !== null && v !== undefined) return v;
+      }
+    }
+    return null;
+  })();
+
+  const aqiStatus = latestPm25 !== null ? getAqiStatus(latestPm25) : null;
 
   const getAqiLevel = (aqi: number) => {
     if (aqi <= 50) return "good";
@@ -188,7 +192,7 @@ export function AirQualityModal({
     return "hazardous";
   };
 
-  const currentAqi = latestData?.aqi || 0;
+  const currentAqi = airQualityData?.current?.us_aqi ?? 0;
   const currentAqiLevel = getAqiLevel(currentAqi);
 
   return (
@@ -214,7 +218,7 @@ export function AirQualityModal({
           </div>
         )}
 
-        {!loading && !error && airQualityData && latestData && (
+        {!loading && !error && airQualityData && (
           <div className="space-y-6">
             <div className="bg-[#18314F]/50 p-6 rounded-lg border border-white/10">
               <h3 className="text-sm font-medium text-white/80 mb-4 text-center">
@@ -222,7 +226,7 @@ export function AirQualityModal({
               </h3>
               <div className="flex justify-center">
                 <SemiGauge
-                  value={latestData.aqi}
+                  value={currentAqi}
                   size={200}
                   min={0}
                   max={300}

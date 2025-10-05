@@ -1,11 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, CheckCircle2, Loader2, MapPin } from "lucide-react";
+import { createClient as createSupabaseClient } from "@/utils/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 const palette = {
   midnight: "#0A0424",
@@ -29,6 +31,14 @@ type GeminiAdvice = {
   safe_to_go_out: boolean;
   risk_summary: string;
   recommendations: string[];
+};
+
+type Illness = {
+  id?: string;
+  name: string;
+  severity: "low" | "medium" | "high";
+  notes: string;
+  user_id: string;
 };
 
 function useIpLocation() {
@@ -61,26 +71,52 @@ function useIpLocation() {
 }
 
 async function fetchAqi(lat: number, lon: number): Promise<AqiPoint | null> {
-  if (!process.env.NEXT_PUBLIC_RAPIDAPI_KEY) {
-    throw new Error("Missing NEXT_PUBLIC_RAPIDAPI_KEY");
-  }
-  const res = await axios.get(
-    "https://air-quality.p.rapidapi.com/history/airquality",
+  // Align with AirQualityModal: use Open-Meteo Air Quality API
+  const response = await axios.get(
+    "https://air-quality-api.open-meteo.com/v1/air-quality",
     {
-      params: { lat, lon },
-      headers: {
-        "x-rapidapi-key": process.env.NEXT_PUBLIC_RAPIDAPI_KEY,
-        "x-rapidapi-host": process.env.NEXT_PUBLIC_RAPIDAPI_HOST || "air-quality.p.rapidapi.com",
-        "Content-Type": "application/json",
+      params: {
+        latitude: lat,
+        longitude: lon,
+        current: "us_aqi", // request current US AQI
+        hourly: "pm2_5,us_aqi", // also fetch hourly series for fallback/latest pm2.5
+        timezone: "auto",
       },
       timeout: 15000,
-      validateStatus: (s) => s < 500,
+      validateStatus: (status) => status < 500,
     }
   );
-  const arr = res.data?.data;
-  if (!Array.isArray(arr) || arr.length === 0) return null;
-  // Use the most recent point
-  return arr[0] as AqiPoint;
+
+  const data = response.data;
+  if (!data || typeof data !== "object") return null;
+
+  const current = data.current as { us_aqi?: number; time?: string } | undefined;
+  const hourly = data.hourly as { pm2_5?: Array<number | null | undefined> } | undefined;
+
+  const aqi = current?.us_aqi;
+  if (aqi == null) return null;
+
+  // Determine latest PM2.5 similar to AirQualityModal
+  let latestPm25: number | undefined;
+  if (typeof (data?.current as { pm2_5?: number })?.pm2_5 === 'number') {
+    latestPm25 = (data.current as { pm2_5?: number })?.pm2_5;
+  } else if (hourly?.pm2_5 && Array.isArray(hourly.pm2_5)) {
+    for (let i = hourly.pm2_5.length - 1; i >= 0; i--) {
+      const v = hourly.pm2_5[i];
+      if (v !== null && v !== undefined) {
+        latestPm25 = v as number;
+        break;
+      }
+    }
+  }
+
+  const point: AqiPoint = {
+    aqi,
+    pm25: latestPm25,
+    datetime: current?.time,
+  };
+
+  return point;
 }
 
 // AQI Cache utility with IP-based keys and expiration
@@ -170,8 +206,14 @@ function aqiLevel(aqi: number) {
   return { label: "Hazardous", color: "text-pink-600" } as const;
 }
 
-function buildPrompt(lat: number, lon: number, point: AqiPoint) {
+function buildPrompt(lat: number, lon: number, point: AqiPoint, conditions: Illness[]) {
   const { aqi, pm25, pm10, o3, no2, so2, co } = point;
+  const conditionsSummary = conditions && conditions.length
+    ? conditions
+        .slice(0, 8)
+        .map((c) => `${c.name}${c.severity ? `(${c.severity})` : ""}${c.notes ? ` - ${c.notes}` : ""}`)
+        .join("; ")
+    : "none reported";
   return `You are a concise respiratory-health advisor.
 Given local air metrics, assess outdoor safety and health risks for a general adult.
 
@@ -196,7 +238,8 @@ Inputs:
 - O3: ${o3 ?? "n/a"}
 - NO2: ${no2 ?? "n/a"}
 - SO2: ${so2 ?? "n/a"}
-- CO: ${co ?? "n/a"}`;
+- CO: ${co ?? "n/a"}
+- User health conditions (consider risks/recs tailored to these): ${conditionsSummary}`;
 }
 
 async function getGeminiAdvice(prompt: string): Promise<GeminiAdvice> {
@@ -214,7 +257,15 @@ async function getGeminiAdvice(prompt: string): Promise<GeminiAdvice> {
   let lastErr: unknown = null;
   for (const m of candidateModels) {
     try {
-      const model = genAI.getGenerativeModel({ model: m });
+      const model = genAI.getGenerativeModel({
+        model: m,
+        generationConfig: {
+          temperature: 0,
+          topP: 0,
+          topK: 1,
+          candidateCount: 1,
+        },
+      });
       const res = await model.generateContent({ contents: [{ role: "user", parts: [{ text: prompt }] }] });
       text = res.response.text().trim();
       if (text) break;
@@ -249,6 +300,44 @@ export default function MedicalReviewCard() {
   const [advice, setAdvice] = useState<GeminiAdvice | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isFromCache, setIsFromCache] = useState(false);
+  const { user } = useAuth();
+  const supabase = useMemo(() => createSupabaseClient(), []);
+  const [conditions, setConditions] = useState<Illness[]>([]);
+  const [condLoading, setCondLoading] = useState(false);
+  const [conditionsLoaded, setConditionsLoaded] = useState(false);
+  const conditionsRef = useRef<Illness[]>([]);
+  const hasAutoRefreshedRef = useRef(false);
+
+  // Fetch user's health conditions
+  useEffect(() => {
+    const fetchConditions = async () => {
+      if (!user) {
+        setConditions([]);
+        setConditionsLoaded(true);
+        return;
+      }
+      try {
+        setCondLoading(true);
+        const { data, error } = await supabase
+          .from('user_illnesses')
+          .select('*')
+          .eq('user_id', user.id);
+        if (error) throw error;
+        setConditions(data || []);
+      } catch (e) {
+        console.error('Failed to load health conditions', e);
+      } finally {
+        setCondLoading(false);
+        setConditionsLoaded(true);
+      }
+    };
+    void fetchConditions();
+  }, [supabase, user]);
+
+  // Keep a ref in sync to avoid re-creating callbacks when conditions change
+  useEffect(() => {
+    conditionsRef.current = conditions;
+  }, [conditions]);
 
   const status = useMemo(() => {
     const aqi = aqiPoint?.aqi ?? null;
@@ -268,7 +357,7 @@ export default function MedicalReviewCard() {
       if (cachedData) {
         setAqiPoint(cachedData);
         setIsFromCache(true);
-        const prompt = buildPrompt(coords.lat, coords.lon, cachedData);
+        const prompt = buildPrompt(coords.lat, coords.lon, cachedData, conditionsRef.current);
         const ai = await getGeminiAdvice(prompt);
         setAdvice(ai);
         setLoading(false);
@@ -280,7 +369,7 @@ export default function MedicalReviewCard() {
       if (!latest) throw new Error("No AQI data available");
       setAqiPoint(latest);
       setCachedAqiData(ip, latest, { lat: coords.lat, lon: coords.lon });
-      const prompt = buildPrompt(coords.lat, coords.lon, latest);
+      const prompt = buildPrompt(coords.lat, coords.lon, latest, conditionsRef.current);
       const ai = await getGeminiAdvice(prompt);
       setAdvice(ai);
     } catch (e: unknown) {
@@ -301,7 +390,7 @@ export default function MedicalReviewCard() {
       const latest = await forceRefreshAqi(coords.lat, coords.lon, ip);
       if (!latest) throw new Error("No AQI data available");
       setAqiPoint(latest);
-      const prompt = buildPrompt(coords.lat, coords.lon, latest);
+      const prompt = buildPrompt(coords.lat, coords.lon, latest, conditionsRef.current);
       const ai = await getGeminiAdvice(prompt);
       setAdvice(ai);
     } catch (e: unknown) {
@@ -312,8 +401,12 @@ export default function MedicalReviewCard() {
   }, [coords, ip]);
 
   useEffect(() => {
-    if (coords) void refresh();
-  }, [coords, refresh]);
+    // Auto-run once when both location and conditions are ready
+    if (!hasAutoRefreshedRef.current && coords && conditionsLoaded) {
+      hasAutoRefreshedRef.current = true;
+      void refresh();
+    }
+  }, [coords, conditionsLoaded, refresh]);
 
   return (
     <Card
@@ -352,9 +445,6 @@ export default function MedicalReviewCard() {
       <CardContent className="pt-4">
         {!process.env.NEXT_PUBLIC_GEMINI_API_KEY && (
           <div className="mb-3 text-sm text-red-300">Missing NEXT_PUBLIC_GEMINI_API_KEY</div>
-        )}
-        {!process.env.NEXT_PUBLIC_RAPIDAPI_KEY && (
-          <div className="mb-3 text-sm text-red-300">Missing NEXT_PUBLIC_RAPIDAPI_KEY</div>
         )}
 
         {locError && (

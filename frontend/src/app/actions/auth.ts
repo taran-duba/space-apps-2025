@@ -29,10 +29,13 @@ export async function signIn(email: string, password: string) {
   })
 
   if (error) {
-    return { error: error.message }
+    // Expose Supabase error code to the client (e.g., 'email_not_confirmed')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const errorCode = (error as any)?.code ?? null
+    return { error: error.message, errorCode }
   }
 
-  return { data, error: null }
+  return { data, error: null, errorCode: null }
 }
 
 export async function signOut() {

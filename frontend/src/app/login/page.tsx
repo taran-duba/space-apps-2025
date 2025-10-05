@@ -30,6 +30,7 @@ export default function LoginPage() {
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
   const [redirectTo, setRedirectTo] = useState("/dashboard");
+  const [showUnverifiedNote, setShowUnverifiedNote] = useState(false);
 
   // Search params are handled in the Suspense-wrapped helper above
 
@@ -37,9 +38,13 @@ export default function LoginPage() {
     e.preventDefault();
     try {
       setLoading(true);
-      const { error } = await signIn(email, password);
+      const { error, errorCode } = await signIn(email, password);
 
       if (error) {
+        // Show a helpful note if the email hasn't been verified yet
+        const looksUnverified =
+          errorCode === 'email_not_confirmed' || /confirm/i.test(error);
+        setShowUnverifiedNote(looksUnverified);
         toast.error(error);
         return;
       }
@@ -66,6 +71,11 @@ export default function LoginPage() {
           <Suspense fallback={null}>
             <RedirectFromParams setRedirectTo={setRedirectTo} />
           </Suspense>
+          {showUnverifiedNote && (
+            <div className="mb-4 rounded-md border border-amber-300/60 bg-amber-100/10 px-3 py-2 text-amber-200">
+              Please verify your email to sign in. Check your inbox for the confirmation link.
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="email" className="text-white">Email</Label>
