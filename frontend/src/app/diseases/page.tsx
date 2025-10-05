@@ -41,7 +41,7 @@ export const DISEASES: Readonly<Disease[]> = [
     groups: ["Children", "Adults"],
     tags: ["wheezing", "attacks", "hospital visits"],
     references: [
-      { label: "CDC Asthma & Air Quality", url: "https://www.cdc.gov/asthma/air_pollution.htm" },
+      { label: "CDC Asthma & Air Quality", url: "https://www.cdc.gov/asthma/index.html" },
       { label: "HEI — State of Global Air", url: "https://www.stateofglobalair.org/" }
     ]
   },
@@ -75,7 +75,7 @@ export const DISEASES: Readonly<Disease[]> = [
     groups: ["Older Adults"],
     tags: ["cough", "mucus", "irritation"],
     references: [
-      { label: "EPA — Health Effects of Ozone/Particles", url: "https://www.epa.gov/air-quality-management-process/health-effects-ozone-and-particles" }
+      { label: "EPA — Health Effects of Ozone/Particles", url: "https://www.epa.gov/ground-level-ozone-pollution/health-effects-ozone-pollution" }
     ]
   },
   {
@@ -97,7 +97,7 @@ export const DISEASES: Readonly<Disease[]> = [
     groups: ["Older Adults"],
     tags: ["chronic exposure", "incidence"],
     references: [
-      { label: "WHO/IARC — Outdoor Air Pollution", url: "https://www.iarc.who.int/featured-news/outdoor-air-pollution-a-leading-environmental-cause-of-cancer-deaths/" }
+      { label: "WHO/IARC — Outdoor Air Pollution", url: "https://www.iarc.who.int/video/iarc-outdoor-air-pollution-a-leading-environmental-cause-of-cancer-deaths/" }
     ]
   },
   {
@@ -108,7 +108,7 @@ export const DISEASES: Readonly<Disease[]> = [
     groups: ["Older Adults"],
     tags: ["exacerbation", "hospitalization"],
     references: [
-      { label: "NIH — IPF Overview", url: "https://www.nhlbi.nih.gov/health/topics/idiopathic-pulmonary-fibrosis" }
+      { label: "NIH — IPF Overview", url: "https://www.nhlbi.nih.gov/health/idiopathic-pulmonary-fibrosis" }
     ]
   },
   {
@@ -119,7 +119,7 @@ export const DISEASES: Readonly<Disease[]> = [
     groups: ["Children", "Adults"],
     tags: ["CF", "infections"],
     references: [
-      { label: "CDC — Cystic Fibrosis", url: "https://www.cdc.gov/genomics/disease/cystic_fibrosis.htm" }
+      { label: "CDC — Cystic Fibrosis", url: "https://www.cdc.gov/cystic-fibrosis/about/index.html" }
     ]
   },
   {
@@ -130,7 +130,7 @@ export const DISEASES: Readonly<Disease[]> = [
     groups: ["Children"],
     tags: ["FEV1", "development"],
     references: [
-      { label: "WHO — Children and Air Pollution", url: "https://www.who.int/airpollution/infographics/children" }
+      { label: "WHO — Children and Air Pollution", url: "https://www.who.int/publications-detail-redirect/air-pollution-and-child-health" }
     ]
   }
 ] as const;
