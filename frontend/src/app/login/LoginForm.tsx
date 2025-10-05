@@ -19,6 +19,7 @@ export default function LoginForm() {
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
   const [redirectTo, setRedirectTo] = useState("/dashboard");
+  const [showUnverifiedNote, setShowUnverifiedNote] = useState(false);
 
   useEffect(() => {
     const redirectedFrom = searchParams.get("redirectedFrom");
@@ -29,9 +30,12 @@ export default function LoginForm() {
     e.preventDefault();
     try {
       setLoading(true);
-      const { error } = await signIn(email, password);
+      const { error, errorCode } = await signIn(email, password);
 
       if (error) {
+        const looksUnverified =
+          errorCode === 'email_not_confirmed' || /confirm/i.test(error);
+        setShowUnverifiedNote(looksUnverified);
         toast.error(error);
         return;
       }
@@ -54,6 +58,11 @@ export default function LoginForm() {
           <CardTitle className="text-center text-2xl">Login</CardTitle>
         </CardHeader>
         <CardContent>
+          {showUnverifiedNote && (
+            <div className="mb-4 rounded-md border border-amber-300/60 bg-amber-100/10 px-3 py-2 text-amber-200">
+              Please verify your email to sign in. Check your inbox for the confirmation link.
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="email" className="text-white">Email</Label>
