@@ -4,6 +4,7 @@ import { ArrowRight, LogOut } from "lucide-react";
 import { Button } from "./button";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePathname } from "next/navigation";
 
 const palette = {
   midnight: "#0A0424",
@@ -15,10 +16,13 @@ const palette = {
 
 export default function Navbar() {
   const { user, loading, signOut } = useAuth();
+  const pathname = usePathname();
 
   if (loading) {
     return null; // Or a loading spinner
   }
+
+  const isHomePage = pathname === "/";
 
   return (
     <header className="sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-white/0">
@@ -28,12 +32,19 @@ export default function Navbar() {
           <span className="text-lg font-semibold tracking-tight" style={{ color: palette.ice }}>Environauts Presents...</span>
         </Link>
         <nav className="hidden gap-8 md:flex">
-          <Link href="#about" className="text-sm text-white/80 transition hover:text-white">About Us</Link>
-          <Link href="#features" className="text-sm text-white/80 transition hover:text-white">Features</Link>
-          <Link href="#faq" className="text-sm text-white/80 transition hover:text-white">FAQ</Link>
-          <Link href="#contact" className="text-sm text-white/80 transition hover:text-white">Contact Us</Link>
+          {isHomePage && (
+            <>
+              <Link href="#about" className="text-sm text-white/80 transition hover:text-white">About Us</Link>
+              <Link href="#features" className="text-sm text-white/80 transition hover:text-white">Features</Link>
+              <Link href="#faq" className="text-sm text-white/80 transition hover:text-white">FAQ</Link>
+              <Link href="#contact" className="text-sm text-white/80 transition hover:text-white">Contact Us</Link>
+            </>
+          )}
           {user && (
-            <Link href="/profile" className="text-sm text-white/80 transition hover:text-white">My Profile</Link>
+            <>
+              <Link href="/dashboard" className="text-sm text-white/80 transition hover:text-white">Dashboard</Link>
+              <Link href="/profile" className="text-sm text-white/80 transition hover:text-white">My Profile</Link>
+            </>
           )}
         </nav>
         <div className="flex items-center gap-3">
