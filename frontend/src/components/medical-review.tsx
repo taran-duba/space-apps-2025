@@ -98,8 +98,8 @@ async function fetchAqi(lat: number, lon: number): Promise<AqiPoint | null> {
 
   // Determine latest PM2.5 similar to AirQualityModal
   let latestPm25: number | undefined;
-  if (typeof (data?.current as any)?.pm2_5 === 'number') {
-    latestPm25 = (data.current as any).pm2_5 as number;
+  if (typeof (data?.current as { pm2_5?: number })?.pm2_5 === 'number') {
+    latestPm25 = (data.current as { pm2_5?: number })?.pm2_5;
   } else if (hourly?.pm2_5 && Array.isArray(hourly.pm2_5)) {
     for (let i = hourly.pm2_5.length - 1; i >= 0; i--) {
       const v = hourly.pm2_5[i];
