@@ -34,3 +34,27 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## AI Medical Review (Gemini) setup
+
+The dashboard includes an AI-powered medical review based on local AQI.
+
+1. Create `frontend/.env.local` with the following keys:
+
+```
+NEXT_PUBLIC_RAPIDAPI_KEY=your_rapidapi_key
+NEXT_PUBLIC_RAPIDAPI_HOST=air-quality.p.rapidapi.com
+NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_api_key
+```
+
+2. Install dependencies (adds `@google/generative-ai`):
+
+```bash
+npm install
+```
+
+3. Start the dev server and open `/dashboard`.
+
+Notes:
+- Keys are loaded on the client. For production, proxy Gemini calls through a server to avoid exposing the API key.
+- Geolocation requires HTTPS or `localhost`. Grant location permission when prompted.
