@@ -250,7 +250,10 @@ async function getGeminiAdvice(prompt: string): Promise<GeminiAdvice> {
   // Try a sequence of commonly available models to avoid 404s on certain API versions
   const candidateModels = [
     "gemini-2.5-flash",
-    "gemini-2.5-flash-latest"
+    "gemini-2.5-flash-lite",
+    "gemini-2.0-flash",
+    "gemini-2.0-flash-lite",
+    "gemma-3-27b-it",
   ];
 
   let text: string | null = null;
