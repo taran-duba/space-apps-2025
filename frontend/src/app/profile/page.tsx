@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
+import FavoritesScreen from '../favorites/page';
 
 type Illness = {
   id?: string;
@@ -21,10 +22,10 @@ export default function ProfilePage() {
   const { user } = useAuth();
   const [illnesses, setIllnesses] = useState<Illness[]>([]);
   const [loading, setLoading] = useState(true);
-  const [newIllness, setNewIllness] = useState<Omit<Illness, 'id' | 'user_id'>>({ 
-    name: '', 
-    severity: 'medium', 
-    notes: '' 
+  const [newIllness, setNewIllness] = useState<Omit<Illness, 'id' | 'user_id'>>({
+    name: '',
+    severity: 'medium',
+    notes: ''
   });
   const supabase = createClient();
 
@@ -36,7 +37,7 @@ export default function ProfilePage() {
 
   const fetchIllnesses = async () => {
     if (!user) return;
-    
+
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -45,7 +46,7 @@ export default function ProfilePage() {
         .eq('user_id', user.id);
 
       if (error) throw error;
-      
+
       setIllnesses(data || []);
     } catch (error) {
       console.error('Error fetching illnesses:', error);
@@ -58,7 +59,7 @@ export default function ProfilePage() {
   const handleAddIllness = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-    
+
     try {
       const { data, error } = await supabase
         .from('user_illnesses')
@@ -66,7 +67,7 @@ export default function ProfilePage() {
         .select();
 
       if (error) throw error;
-      
+
       setIllnesses([...illnesses, ...(data || [])]);
       setNewIllness({ name: '', severity: 'medium', notes: '' });
       toast.success('Health condition added successfully');
@@ -84,7 +85,7 @@ export default function ProfilePage() {
         .eq('id', id);
 
       if (error) throw error;
-      
+
       setIllnesses(illnesses.filter(illness => illness.id !== id));
       toast.success('Health condition removed');
     } catch (error) {
@@ -100,7 +101,7 @@ export default function ProfilePage() {
   return (
     <div className="container mx-auto px-4 py-8 text-white">
       <h1 className="text-3xl font-bold mb-8 text-white">Your Health Profile</h1>
-      
+
       <Card className="mb-8 bg-gray-800 border-gray-700">
         <CardHeader>
           <CardTitle className="text-white">Add Health Condition</CardTitle>
@@ -116,7 +117,7 @@ export default function ProfilePage() {
                 <Input
                   id="name"
                   value={newIllness.name}
-                  onChange={(e) => setNewIllness({...newIllness, name: e.target.value})}
+                  onChange={(e) => setNewIllness({ ...newIllness, name: e.target.value })}
                   placeholder="e.g., Asthma, Allergies"
                   className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
@@ -128,7 +129,7 @@ export default function ProfilePage() {
                   id="severity"
                   className="flex h-10 w-full rounded-md border border-gray-600 bg-gray-700 px-3 py-2 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   value={newIllness.severity}
-                  onChange={(e) => setNewIllness({...newIllness, severity: e.target.value as 'low' | 'medium' | 'high'})}
+                  onChange={(e) => setNewIllness({ ...newIllness, severity: e.target.value as 'low' | 'medium' | 'high' })}
                   required
                 >
                   <option value="low" className="bg-gray-700">Low</option>
@@ -142,13 +143,13 @@ export default function ProfilePage() {
               <Input
                 id="notes"
                 value={newIllness.notes}
-                onChange={(e) => setNewIllness({...newIllness, notes: e.target.value})}
+                onChange={(e) => setNewIllness({ ...newIllness, notes: e.target.value })}
                 placeholder="Any additional details about your condition"
                 className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               className="mt-2 bg-blue-600 hover:bg-blue-700 text-white font-medium"
             >
               Add Condition
@@ -160,7 +161,7 @@ export default function ProfilePage() {
       <div>
         <h2 className="text-2xl font-semibold mb-4 text-white">Your Health Conditions</h2>
         {illnesses.length === 0 ? (
-          <p className="text-gray-400">No health conditions added yet.</p>
+          <p className="text-gray-400 mb-8">No health conditions added yet.</p>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {illnesses.map((illness) => (
@@ -168,11 +169,10 @@ export default function ProfilePage() {
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-start">
                     <CardTitle className="text-lg text-white">{illness.name}</CardTitle>
-                    <span className={`text-sm px-2 py-1 rounded-full ${
-                      illness.severity === 'high' ? 'bg-red-100 text-red-800' :
+                    <span className={`text-sm px-2 py-1 rounded-full ${illness.severity === 'high' ? 'bg-red-100 text-red-800' :
                       illness.severity === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-green-100 text-green-800'
-                    }`}>
+                        'bg-green-100 text-green-800'
+                      }`}>
                       {illness.severity.charAt(0).toUpperCase() + illness.severity.slice(1)}
                     </span>
                   </div>
