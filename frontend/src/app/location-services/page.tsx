@@ -4,6 +4,13 @@ import React, { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
 import type { Map as LeafletMap, CircleMarker, TileLayer } from "leaflet";
+import {
+  loadFavorites,
+  toggleFavorite,
+  type FavoriteLocation,
+  loadFavoritesFromDB,
+} from "../favorites/favs";
+import { Card, CardContent } from "@/components/ui/card";
 
 // Dynamically import AirQualityModal to prevent SSR issues
 const AirQualityModal = dynamic(
@@ -16,6 +23,7 @@ export default function IpLocationPage() {
   const [region, setRegion] = useState("");
   const [country, setCountry] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [favorites, setFavorites] = useState<FavoriteLocation[]>([]);
 
   const mapRef = useRef<LeafletMap | null>(null);
   const mapElRef = useRef<HTMLDivElement | null>(null);
@@ -36,7 +44,7 @@ export default function IpLocationPage() {
         "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
         {
           attribution:
-            "Tiles © Esri — Source: Esri, Earthstar Geographics, CNES/Airbus DS, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community",
+            "Tiles Esri — Source: Esri, Earthstar Geographics, CNES/Airbus DS, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community",
         }
       ).addTo(map);
     };
@@ -83,6 +91,13 @@ export default function IpLocationPage() {
     detectViaIP();
   }, []);
 
+  useEffect(() => {
+    setFavorites(loadFavorites());
+    void loadFavoritesFromDB().then((remote) => {
+      if (remote.length) setFavorites(remote);
+    });
+  }, []);
+
   const onClear = () => {
     setCity("");
     setRegion("");
@@ -93,6 +108,24 @@ export default function IpLocationPage() {
       markerRef.current = null;
       mapRef.current.setView([20, 0], 2);
     }
+  };
+
+  const onAddFavorite = () => {
+    const latlng = markerRef.current?.getLatLng() ?? mapRef.current?.getCenter();
+    if (!latlng) return;
+    const label = city || [city, region, country].filter(Boolean).join(", ") || "Unnamed location";
+    const updated = toggleFavorite(favorites, { lat: latlng.lat, lng: latlng.lng }, label);
+    setFavorites(updated);
+  };
+
+  const onGoToFavorite = (fav: FavoriteLocation) => {
+    if (!mapRef.current) return;
+    mapRef.current.flyTo([fav.lat, fav.lng], 13, { animate: true });
+  };
+
+  const onToggleFavorite = (fav: FavoriteLocation) => {
+    const updated = toggleFavorite(favorites, { lat: fav.lat, lng: fav.lng });
+    setFavorites(updated);
   };
 
   return (
@@ -118,7 +151,7 @@ export default function IpLocationPage() {
                   : "bg-gray-600/50 text-gray-300 cursor-not-allowed"
               }`}
             >
-              Air Quality Info
+              Get Air Quality Info
             </button>
             <AirQualityModal
               open={isModalOpen}
@@ -136,7 +169,7 @@ export default function IpLocationPage() {
                 <label className="block text-sm font-medium text-white/80 mb-1.5">City</label>
                 <input
                   type="text"
-                  placeholder="Enter city name"
+                  placeholder="e.g. Charlotte"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-[#A4CCC1]/50 focus:border-[#A4CCC1] outline-none transition duration-200 text-white placeholder-white/40"
@@ -198,6 +231,57 @@ export default function IpLocationPage() {
             </div>
           </div>
         </div>
+      </div>
+      <div className="mt-8">
+        <h2 className="text-2xl font-semibold mb-4 text-white">Favorites</h2>
+        <Card className='mb-8 bg-[#0f172a]/60 backdrop-blur-lg rounded-xl border border-white/10 shadow-xl overflow-hidden'>
+          <CardContent>
+            <div className="flex items-center justify-between mb-4">
+              <div className="text-white/80">Save and revisit locations.</div>
+              <button
+                onClick={onAddFavorite}
+                className="px-4 py-2 rounded-lg font-medium transition-all duration-200 bg-[#A4CCC1] text-[#0A0424] hover:bg-[#C7E8F3] shadow-md hover:shadow-lg hover:-translate-y-0.5"
+                disabled={!mapRef.current}
+              >
+                Save Current Location
+              </button>
+            </div>
+
+            {favorites.length === 0 ? (
+              <div className="p-4 text-center text-gray-400">No favorite locations yet.</div>
+            ) : (
+              <div className="grid gap-3 md:grid-cols-3">
+                {favorites.map((fav) => (
+                  <div
+                    key={`${fav.lat}-${fav.lng}-${fav.addedAt}`}
+                    className="border rounded-lg p-3 bg-white/5 border-white/10 hover:bg-white/10 transition cursor-pointer"
+                    onClick={() => onGoToFavorite(fav)}
+                  >
+                    <div className="flex justify-between items-center mb-2">
+                      <div className="font-medium text-white">{fav.label || "Unnamed location"}</div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onToggleFavorite(fav);
+                        }}
+                        className="text-red-400 hover:text-red-300"
+                        title="Remove from favorites"
+                      >
+                        Unfavorite
+                      </button>
+                    </div>
+                    <div className="text-sm text-white/70">
+                      {fav.lat.toFixed(3)}, {fav.lng.toFixed(3)}
+                    </div>
+                    <div className="text-xs text-white/50 mt-1">
+                      Added {new Date(fav.addedAt).toLocaleDateString()}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
