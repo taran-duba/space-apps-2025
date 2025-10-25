@@ -4,6 +4,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import MedicalReviewCard from '@/components/medical-review';
 
 interface ServiceCardProps {
   title: string;
@@ -24,6 +25,12 @@ const services: ServiceCardProps[] = [
     description: 'Explore diseases and their symptoms',
     icon: '💡',
     path: '/diseases'
+  },
+  {
+    title: 'Profile',
+    description: 'View and manage your profile',
+    icon: '👤',
+    path: '/profile'
   }
 ];
 
@@ -85,8 +92,11 @@ export default function Dashboard() {
         <h1 className="text-3xl font-bold mb-2 text-white">{greeting}!</h1>
         <p className="text-primary-foreground">{currentTime} • {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
       </div>
+      <div className="mb-8">
+        <MedicalReviewCard />
+      </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-6">
         {services.map((service) => (
           <ServiceCard key={service.title} {...service} />
         ))}

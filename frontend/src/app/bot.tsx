@@ -2,9 +2,23 @@
 
 import { useEffect } from "react";
 
+// Type for Landbot instance
+interface LandbotInstance {
+  on: (event: string, callback: (data: unknown) => void) => void;
+}
+
+// Extend Window interface
+declare global {
+  interface Window {
+    Landbot?: {
+      Livechat: new (options: unknown) => LandbotInstance;
+    };
+  }
+}
+
 const LandbotChat = () => {
   useEffect(() => {
-    let myLandbot: any;
+    let myLandbot: LandbotInstance | null = null;
 
     const initLandbot = () => {
       if (!myLandbot) {
@@ -13,7 +27,7 @@ const LandbotChat = () => {
         s.async = true;
 
         s.addEventListener("load", () => {
-          // @ts-ignore — Landbot is injected globally
+          // @ts-expect-error — Landbot is injected globally
           myLandbot = new Landbot.Livechat({
             configUrl:
               "https://storage.googleapis.com/landbot.site/v3/H-3165706-PTVYK7T5ZTFT17I2/index.json",

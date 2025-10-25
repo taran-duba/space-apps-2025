@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, FormEvent, Suspense } from "react";
+import React, { useState, useEffect, FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "@/app/actions/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,20 +10,9 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { toast } from "sonner";
 
-// Helper component to safely read search params within a Suspense boundary
-function RedirectFromParams({ setRedirectTo }: { setRedirectTo: React.Dispatch<React.SetStateAction<string>> }) {
-  const searchParams = useSearchParams();
-
-  useEffect(() => {
-    const redirectedFrom = searchParams.get("redirectedFrom");
-    if (redirectedFrom) setRedirectTo(redirectedFrom);
-  }, [searchParams, setRedirectTo]);
-
-  return null;
-}
-
-export default function LoginPage() {
+export default function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams(); // ✅ safe now
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,7 +22,10 @@ export default function LoginPage() {
   const [showUnverifiedNote, setShowUnverifiedNote] = useState(false);
   const [showBadPasswordNote, setShowBadPasswordNote] = useState(false);
 
-  // Search params are handled in the Suspense-wrapped helper above
+  useEffect(() => {
+    const redirectedFrom = searchParams.get("redirectedFrom");
+    if (redirectedFrom) setRedirectTo(redirectedFrom);
+  }, [searchParams]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -42,11 +34,9 @@ export default function LoginPage() {
       const { error, errorCode } = await signIn(email, password);
 
       if (error) {
-        // Show a helpful note if the email hasn't been verified yet
         const looksUnverified =
           errorCode === 'email_not_confirmed' || /confirm/i.test(error);
         setShowUnverifiedNote(looksUnverified);
-        // Detect invalid credentials (wrong password or email)
         const looksBadPassword =
           errorCode === 'invalid_credentials' || /invalid|password/i.test(error);
         setShowBadPasswordNote(looksBadPassword);
@@ -72,10 +62,6 @@ export default function LoginPage() {
           <CardTitle className="text-center text-2xl">Login</CardTitle>
         </CardHeader>
         <CardContent>
-          {/* Suspense boundary required for hooks like useSearchParams during prerender */}
-          <Suspense fallback={null}>
-            <RedirectFromParams setRedirectTo={setRedirectTo} />
-          </Suspense>
           {showUnverifiedNote && (
             <div className="mb-4 rounded-md border border-amber-300/60 bg-amber-100/10 px-3 py-2 text-amber-200">
               Please verify your email to sign in. Check your inbox for the confirmation link.

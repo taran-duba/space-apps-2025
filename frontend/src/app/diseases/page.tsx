@@ -10,15 +10,8 @@ import React, { useMemo, useState } from "react";
  */
 
 // ===== Types =====
-export type Pollutant = "PM2.5" | "PM10" | "O3" | "NO2" | "SO2" | "CO" | "Wildfire smoke";
-export type Group =
-  | "Children"
-  | "Older adults"
-  | "Pregnant people"
-  | "Cardio‑pulmonary"
-  | "Asthma"
-  | "COPD"
-  | "Outdoor workers";
+export type Pollutant = "PM2.5" | "PM10" | "O3" | "NO2" | "SO2" | "CO" | "Wildfire Smoke";
+export type Group = "Infants" | "Children" | "Adults" | "Older Adults";
 
 export interface Reference {
   label: string;
@@ -44,11 +37,11 @@ export const DISEASES: Readonly<Disease[]> = [
     name: "Asthma (exacerbations)",
     summary:
       "Air pollutants can trigger bronchoconstriction and airway inflammation, increasing symptoms, rescue medication use, and ER visits.",
-    pollutants: ["PM2.5", "O3", "NO2", "Wildfire smoke"],
-    groups: ["Children", "Asthma"],
+    pollutants: ["PM2.5", "O3", "NO2", "Wildfire Smoke"],
+    groups: ["Children", "Adults"],
     tags: ["wheezing", "attacks", "hospital visits"],
     references: [
-      { label: "CDC Asthma & Air Quality", url: "https://www.cdc.gov/asthma/air_pollution.htm" },
+      { label: "CDC Asthma & Air Quality", url: "https://www.cdc.gov/asthma/index.html" },
       { label: "HEI — State of Global Air", url: "https://www.stateofglobalair.org/" }
     ]
   },
@@ -56,8 +49,8 @@ export const DISEASES: Readonly<Disease[]> = [
     name: "COPD (exacerbations)",
     summary:
       "Fine particles and gases worsen airflow limitation, raising risk of exacerbations, hospitalizations, and mortality in COPD.",
-    pollutants: ["PM2.5", "PM10", "NO2", "O3", "SO2", "Wildfire smoke"],
-    groups: ["Older adults", "COPD", "Cardio‑pulmonary"],
+    pollutants: ["PM2.5", "PM10", "NO2", "O3", "SO2", "Wildfire Smoke"],
+    groups: ["Older Adults"],
     tags: ["chronic bronchitis", "emphysema", "exacerbation"],
     references: [
       { label: "WHO — Chronic Respiratory Diseases", url: "https://www.who.int/health-topics/chronic-respiratory-diseases" }
@@ -67,7 +60,7 @@ export const DISEASES: Readonly<Disease[]> = [
     name: "Acute lower respiratory infections (ALRI)",
     summary:
       "Pollution increases susceptibility to and severity of infections like pneumonia and bronchiolitis, especially in children.",
-    pollutants: ["PM2.5", "NO2", "SO2", "Wildfire smoke"],
+    pollutants: ["PM2.5", "NO2", "SO2", "Wildfire Smoke"],
     groups: ["Children"],
     tags: ["pneumonia", "bronchiolitis"],
     references: [
@@ -79,10 +72,10 @@ export const DISEASES: Readonly<Disease[]> = [
     summary:
       "Irritant gases and particles inflame bronchi, causing cough and mucus production; chronic exposure increases chronic bronchitis risk.",
     pollutants: ["PM2.5", "PM10", "NO2", "SO2", "O3"],
-    groups: ["Older adults", "Outdoor workers"],
+    groups: ["Older Adults"],
     tags: ["cough", "mucus", "irritation"],
     references: [
-      { label: "EPA — Health Effects of Ozone/Particles", url: "https://www.epa.gov/air-quality-management-process/health-effects-ozone-and-particles" }
+      { label: "EPA — Health Effects of Ozone/Particles", url: "https://www.epa.gov/ground-level-ozone-pollution/health-effects-ozone-pollution" }
     ]
   },
   {
@@ -90,7 +83,7 @@ export const DISEASES: Readonly<Disease[]> = [
     summary:
       "Pollutants can amplify allergic airway responses and sensitization, worsening rhinitis and triggering asthma in susceptible people.",
     pollutants: ["NO2", "O3", "PM2.5"],
-    groups: ["Children", "Asthma"],
+    groups: ["Children", "Adults"],
     tags: ["allergy", "sensitization"],
     references: [
       { label: "NIH — Air Pollution & Allergies", url: "https://www.niehs.nih.gov/health/topics/agents/air-pollution" }
@@ -101,10 +94,10 @@ export const DISEASES: Readonly<Disease[]> = [
     summary:
       "Long-term exposure to fine particles is associated with increased lung cancer incidence and mortality.",
     pollutants: ["PM2.5"],
-    groups: ["Older adults"],
+    groups: ["Older Adults"],
     tags: ["chronic exposure", "incidence"],
     references: [
-      { label: "WHO/IARC — Outdoor Air Pollution", url: "https://www.iarc.who.int/featured-news/outdoor-air-pollution-a-leading-environmental-cause-of-cancer-deaths/" }
+      { label: "WHO/IARC — Outdoor Air Pollution", url: "https://www.iarc.who.int/video/iarc-outdoor-air-pollution-a-leading-environmental-cause-of-cancer-deaths/" }
     ]
   },
   {
@@ -112,10 +105,10 @@ export const DISEASES: Readonly<Disease[]> = [
     summary:
       "Short‑term rises in particles and ozone may precipitate acute worsening events in fibrotic lung disease.",
     pollutants: ["PM2.5", "O3"],
-    groups: ["Older adults", "Cardio‑pulmonary"],
+    groups: ["Older Adults"],
     tags: ["exacerbation", "hospitalization"],
     references: [
-      { label: "NIH — IPF Overview", url: "https://www.nhlbi.nih.gov/health/topics/idiopathic-pulmonary-fibrosis" }
+      { label: "NIH — IPF Overview", url: "https://www.nhlbi.nih.gov/health/idiopathic-pulmonary-fibrosis" }
     ]
   },
   {
@@ -123,10 +116,10 @@ export const DISEASES: Readonly<Disease[]> = [
     summary:
       "Air pollution exposure is linked to increased respiratory infections and exacerbations in CF populations.",
     pollutants: ["PM2.5", "NO2", "O3"],
-    groups: ["Children", "Cardio‑pulmonary"],
+    groups: ["Children", "Adults"],
     tags: ["CF", "infections"],
     references: [
-      { label: "CDC — Cystic Fibrosis", url: "https://www.cdc.gov/genomics/disease/cystic_fibrosis.htm" }
+      { label: "CDC — Cystic Fibrosis", url: "https://www.cdc.gov/cystic-fibrosis/about/index.html" }
     ]
   },
   {
@@ -137,7 +130,7 @@ export const DISEASES: Readonly<Disease[]> = [
     groups: ["Children"],
     tags: ["FEV1", "development"],
     references: [
-      { label: "WHO — Children and Air Pollution", url: "https://www.who.int/airpollution/infographics/children" }
+      { label: "WHO — Children and Air Pollution", url: "https://www.who.int/publications-detail-redirect/air-pollution-and-child-health" }
     ]
   }
 ] as const;
