@@ -5,6 +5,7 @@ import { Button } from "./button";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 
 const palette = {
   midnight: "#0A0424",
@@ -28,7 +29,7 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-white/0">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         <Link href="/" className="flex items-center gap-3">
-          <img src="/favicon.png" alt="Environauts Logo" className="h-9 w-9 rounded-2xl" />
+          <Image src={"/favicon.png"} width={32} height={32}alt="Environauts Logo" className="h-9 w-9 rounded-2xl" />
           <span className="text-lg font-semibold tracking-tight" style={{ color: palette.ice }}>Environauts Presents...</span>
         </Link>
         <nav className="hidden gap-8 md:flex">

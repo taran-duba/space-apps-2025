@@ -13,6 +13,7 @@ export interface FavoriteLocation {
 
 const STORAGE_KEY = 'clairify_favorites';
 const SUPABASE_TABLE = 'favorites';
+type FavoriteRow = { lat: number; lng: number; label: string | null; added_at: string };
 
 // Load all favorites from Supabase
 export function loadFavorites(): FavoriteLocation[] {
@@ -136,7 +137,8 @@ export async function loadFavoritesFromDB(): Promise<FavoriteLocation[]> {
       console.error('Failed to load favorites from Supabase:', error);
       return [];
     }
-    const mapped: FavoriteLocation[] = (data ?? []).map((row: any, idx: number) => ({
+    const rows = (data ?? []) as FavoriteRow[];
+    const mapped: FavoriteLocation[] = rows.map((row: FavoriteRow, idx: number) => ({
       id: Date.now() + idx,
       lat: row.lat,
       lng: row.lng,
