@@ -1,8 +1,8 @@
+'use client';
 import React, { useState, useEffect } from 'react';
 import {
   loadFavorites,
   toggleFavorite,
-  isFavorite,
   FavoriteLocation,
 } from './favs';
 
