@@ -73,7 +73,7 @@ export default function SignUpPage(): JSX.Element {
       setError("");
       setSuccess("");
       
-      const { error } = await signUp(form.email, form.password);
+      const { error } = await signUp(form.email, form.password, form.firstName, form.lastName);
       
       if (error) {
         toast.error(error);

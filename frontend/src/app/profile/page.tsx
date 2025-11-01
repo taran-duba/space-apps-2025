@@ -28,11 +28,15 @@ export default function ProfilePage() {
     severity: 'medium',
     notes: ''
   });
+  const [displayName, setDisplayName] = useState('');
   const supabase = createClient();
 
 useEffect(() => {
   if (user) {
     fetchIllnesses();
+    // initialize display name from auth metadata
+    const dn = (user.user_metadata as any)?.display_name || '';
+    setDisplayName(dn);
 
     const fetchAvatar = async () => {
       const { data, error } = await supabase
@@ -111,9 +115,46 @@ useEffect(() => {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
   }
 
+  const handleSaveDisplayName = async () => {
+    if (!user) return;
+    try {
+      const { error } = await supabase.auth.updateUser({
+        data: { display_name: displayName }
+      });
+      if (error) throw error;
+      toast.success('Display name updated');
+    } catch (err) {
+      console.error('Error updating display name:', err);
+      toast.error('Failed to update display name');
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 text-white">
       <h1 className="text-3xl font-bold mb-8 text-white">Your Health Profile</h1>
+      {user && (
+        <Card className="mb-8 bg-gray-800 border-gray-700">
+          <CardHeader>
+            <CardTitle className="text-white">Display Name</CardTitle>
+            <CardDescription className="text-gray-300">Update how your name appears in the app</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-end">
+              <div className="w-full sm:flex-1 space-y-2">
+                <Label htmlFor="displayName" className="text-gray-300">Display Name</Label>
+                <Input
+                  id="displayName"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder="Your name"
+                  className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <Button onClick={handleSaveDisplayName} className="bg-blue-600 hover:bg-blue-700 text-white">Save</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
       {user && (
         <AvatarUpload
           userId={user.id}
