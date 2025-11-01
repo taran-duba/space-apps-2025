@@ -70,14 +70,21 @@ export default function LoginPage() {
   const handleGoogleSignIn = async () => {
     try {
       setLoading(true);
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 
+        (process.env.NODE_ENV === 'production' ? 'https://clairify.earth' : window.location.origin);
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: `${siteUrl}/auth/callback`,
         },
       });
-      if (error) throw error;
+      
+      if (error) {
+        console.error("Google OAuth error:", error);
+        throw error;
+      }
+      
       if (data?.url) {
         window.location.href = data.url;
       }
