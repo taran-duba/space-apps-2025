@@ -4,6 +4,7 @@ import React, { useState, useMemo, type ChangeEvent, type FormEvent, JSX } from 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signUp } from "@/app/actions/auth";
+import { createClient } from "@/utils/supabase/client";
 import { toast } from "sonner";
 
 interface FormState {
@@ -16,6 +17,7 @@ interface FormState {
 
 export default function SignUpPage(): JSX.Element {
   const router = useRouter();
+  const supabase = createClient();
   const [form, setForm] = useState<FormState>({
     firstName: "",
     lastName: "",
@@ -78,8 +80,8 @@ export default function SignUpPage(): JSX.Element {
         return;
       }
       
-      toast.success("Account created! Please check your email to confirm your account.");
-      setSuccess("Account created! Please check your email to confirm your account.");
+      toast.success("Account created! Please check your email to confirm your account. Be sure to check your spam folder if you don't see it.");
+      setSuccess("Account created! Please check your email to confirm your account. Be sure to check your spam folder if you don't see it.");
       
       // Clear the form but keep the email for reference
       setForm({ 
@@ -98,6 +100,28 @@ export default function SignUpPage(): JSX.Element {
     } catch (err) {
       console.error("Signup error:", err);
       toast.error("An unexpected error occurred. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleGoogleSignUp = async (): Promise<void> => {
+    try {
+      setSubmitting(true);
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${siteUrl}/auth/callback`,
+        },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (err) {
+      console.error("Google sign-up error:", err);
+      toast.error("Failed to start Google sign-up. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -232,6 +256,14 @@ export default function SignUpPage(): JSX.Element {
                 <span className="bg-[#18314F] px-3 text-xs text-[#FFFFFF]">or</span>
               </div>
             </div>
+            <button
+              type="button"
+              onClick={handleGoogleSignUp}
+              disabled={submitting}
+              className="w-full rounded-xl py-2.5 font-semibold shadow disabled:opacity-50 disabled:cursor-not-allowed bg-[#EA4335] text-white hover:bg-[#c83b2f] transition"
+            >
+              Continue with Google
+            </button>
             <p className="text-center text-sm text-[#FFFFFF]">
               Already have an account? <Link href="/login" className="font-medium underline text-[#FFFFFF]">Sign in</Link>
             </p>
