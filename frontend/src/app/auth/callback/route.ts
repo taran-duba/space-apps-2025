@@ -25,11 +25,18 @@ export async function GET(request: NextRequest) {
         const identities = (user.identities || []) as Array<{ provider?: string }>
         const isGoogle = identities.some((i) => i?.provider === 'google')
         if (isGoogle) {
-          const meta: Record<string, any> = (user.user_metadata as any) || {}
-          const hasAvatar = Boolean(meta.avatar_url)
-          const hasDisplayName = Boolean(meta.display_name)
-          const picture = meta.avatar_url || meta.picture || meta.avatar || meta.picture_url || null
-          const name = meta.display_name || meta.full_name || meta.name || [meta.given_name, meta.family_name].filter(Boolean).join(' ').trim() || null
+          const meta: Record<string, unknown> = (user.user_metadata ?? {}) as Record<string, unknown>
+          const getStr = (k: string): string | undefined => {
+            const v = meta[k]
+            return typeof v === 'string' ? v : undefined
+          }
+          const given = getStr('given_name')
+          const family = getStr('family_name')
+          const hasAvatar = typeof getStr('avatar_url') === 'string'
+          const hasDisplayName = typeof getStr('display_name') === 'string'
+          const picture = getStr('avatar_url') || getStr('picture') || getStr('avatar') || getStr('picture_url') || null
+          const composed = [given, family].filter(Boolean).join(' ').trim()
+          const name = getStr('display_name') || getStr('full_name') || getStr('name') || (composed || null)
 
           const dataToUpdate: Record<string, string> = {}
           if (!hasAvatar && picture) dataToUpdate.avatar_url = picture

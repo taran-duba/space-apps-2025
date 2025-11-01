@@ -18,9 +18,10 @@ const palette = {
 export default function Navbar() {
   const { user, loading, signOut } = useAuth();
   const pathname = usePathname();
-  const displayName = (user?.user_metadata as any)?.display_name || user?.email || '';
-  const avatarUrl = ((user?.user_metadata as any)?.avatar_url as string | undefined) || 'https://picsum.photos/64';
-  const avatarVersion = (user?.user_metadata as any)?.avatar_version || user?.updated_at || '';
+  const meta = (user?.user_metadata ?? {}) as Record<string, unknown>;
+  const displayName = (typeof meta.display_name === 'string' && meta.display_name) || user?.email || '';
+  const avatarUrl = (typeof meta.avatar_url === 'string' && meta.avatar_url) || 'https://picsum.photos/64';
+  const avatarVersion = (typeof meta.avatar_version === 'string' && meta.avatar_version) || user?.updated_at || '';
   const displayAvatarUrl = avatarUrl ? `${avatarUrl}?v=${encodeURIComponent(avatarVersion)}` : avatarUrl;
 
   if (loading) {

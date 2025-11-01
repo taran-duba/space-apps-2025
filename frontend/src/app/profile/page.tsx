@@ -34,8 +34,9 @@ export default function ProfilePage() {
 useEffect(() => {
   if (user) {
     fetchIllnesses();
-    // initialize display name from auth metadata
-    const dn = (user.user_metadata as any)?.display_name || '';
+    // initialize display name from auth metadata safely
+    const meta = (user.user_metadata ?? {}) as Record<string, unknown>;
+    const dn = typeof meta.display_name === 'string' ? meta.display_name : '';
     setDisplayName(dn);
 
     const fetchAvatar = async () => {
