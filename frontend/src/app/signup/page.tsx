@@ -109,7 +109,7 @@ export default function SignUpPage(): JSX.Element {
     try {
       setSubmitting(true);
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 
-        (process.env.NODE_ENV === 'production' ? 'https://clairify.earth' : window.location.origin);
+        (process.env.NODE_ENV === 'production' ? 'https://www.clairify.earth' : window.location.origin);
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
