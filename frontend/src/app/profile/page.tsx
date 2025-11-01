@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import FavoritesScreen from '../favorites/page';
+import AvatarUpload from './pfps';
 
 type Illness = {
   id?: string;
@@ -21,6 +21,7 @@ type Illness = {
 export default function ProfilePage() {
   const { user } = useAuth();
   const [illnesses, setIllnesses] = useState<Illness[]>([]);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [newIllness, setNewIllness] = useState<Omit<Illness, 'id' | 'user_id'>>({
     name: '',
@@ -29,11 +30,23 @@ export default function ProfilePage() {
   });
   const supabase = createClient();
 
-  useEffect(() => {
-    if (user) {
-      fetchIllnesses();
-    }
-  }, [user]);
+useEffect(() => {
+  if (user) {
+    fetchIllnesses();
+
+    const fetchAvatar = async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('avatar_url')
+        .eq('id', user.id)
+        .single();
+
+      if (!error && data) setAvatarUrl(data.avatar_url);
+    };
+
+    fetchAvatar();
+  }
+}, [user]);
 
   const fetchIllnesses = async () => {
     if (!user) return;
@@ -101,7 +114,13 @@ export default function ProfilePage() {
   return (
     <div className="container mx-auto px-4 py-8 text-white">
       <h1 className="text-3xl font-bold mb-8 text-white">Your Health Profile</h1>
-
+      {user && (
+        <AvatarUpload
+          userId={user.id}
+          currentAvatarUrl={avatarUrl}
+          onUpload={(url) => setAvatarUrl(url)}
+        />
+      )}
       <Card className="mb-8 bg-gray-800 border-gray-700">
         <CardHeader>
           <CardTitle className="text-white">Add Health Condition</CardTitle>
