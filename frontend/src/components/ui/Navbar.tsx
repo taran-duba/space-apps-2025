@@ -18,6 +18,11 @@ const palette = {
 export default function Navbar() {
   const { user, loading, signOut } = useAuth();
   const pathname = usePathname();
+  const meta = (user?.user_metadata ?? {}) as Record<string, unknown>;
+  const displayName = (typeof meta.display_name === 'string' && meta.display_name) || user?.email || '';
+  const avatarUrl = (typeof meta.avatar_url === 'string' && meta.avatar_url) || 'https://picsum.photos/64';
+  const avatarVersion = (typeof meta.avatar_version === 'string' && meta.avatar_version) || user?.updated_at || '';
+  const displayAvatarUrl = avatarUrl ? `${avatarUrl}?v=${encodeURIComponent(avatarVersion)}` : avatarUrl;
 
   if (loading) {
     return null; // Or a loading spinner
@@ -51,8 +56,15 @@ export default function Navbar() {
         <div className="flex items-center gap-3">
           {user ? (
             <div className="flex items-center gap-3">
+              <Image
+                src={displayAvatarUrl}
+                alt="User avatar"
+                width={28}
+                height={28}
+                className="hidden md:inline-block h-7 w-7 rounded-full object-cover"
+              />
               <span className="hidden text-sm text-white/80 md:inline-block">
-                {user.email}
+                {displayName}
               </span>
               <Button 
                 onClick={signOut}
