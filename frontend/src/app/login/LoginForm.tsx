@@ -3,6 +3,7 @@
 import React, { useState, useEffect, FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "@/app/actions/auth";
+import { createClient } from "@/utils/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -21,6 +22,7 @@ export default function LoginForm() {
   const [redirectTo, setRedirectTo] = useState("/dashboard");
   const [showUnverifiedNote, setShowUnverifiedNote] = useState(false);
   const [showBadPasswordNote, setShowBadPasswordNote] = useState(false);
+  const supabase = createClient();
 
   useEffect(() => {
     const redirectedFrom = searchParams.get("redirectedFrom");
@@ -50,6 +52,34 @@ export default function LoginForm() {
     } catch (err) {
       console.error("Login error:", err);
       toast.error("An unexpected error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      setLoading(true);
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${siteUrl}/auth/callback`,
+          queryParams: {
+            // Optional: prompt: "consent",
+            // Optional: access_type: "offline",
+          },
+        },
+      });
+      if (error) {
+        throw error;
+      }
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (err) {
+      console.error("Google sign-in error:", err);
+      toast.error("Failed to start Google sign-in. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -118,6 +148,17 @@ export default function LoginForm() {
               {loading ? "Signing in…" : "Sign In"}
             </Button>
           </form>
+
+          <div className="mt-4">
+            <Button
+              type="button"
+              onClick={handleGoogleSignIn}
+              className="w-full bg-[#EA4335] hover:bg-[#c83b2f] text-white font-semibold"
+              disabled={loading}
+            >
+              Continue with Google
+            </Button>
+          </div>
 
           <p className="mt-4 text-center text-white/90">
             Don&apos;t have an account?{" "}
