@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import MedicalReviewCard from '@/components/medical-review';
+import Script from 'next/script';
 
 interface ServiceCardProps {
   title: string;
@@ -88,6 +89,12 @@ export default function Dashboard() {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <Script
+        async
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9011514285034166"
+        crossOrigin="anonymous"
+        strategy="afterInteractive"
+      />
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2 text-white">{greeting}!</h1>
         <p className="text-primary-foreground">{currentTime} • {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
@@ -95,12 +102,38 @@ export default function Dashboard() {
       <div className="mb-8">
         <MedicalReviewCard />
       </div>
+      <div className="mb-8">
+        <AdSenseUnit adSlot="6042899866" />
+      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-6">
         {services.map((service) => (
           <ServiceCard key={service.title} {...service} />
         ))}
       </div>
+      <div className="mt-8">
+        <AdSenseUnit adSlot="6042899866" />
+      </div>
     </div>
+  );
+}
+
+function AdSenseUnit({ adSlot }: { adSlot: string }) {
+  useEffect(() => {
+    try {
+      const w = window as any;
+      w.adsbygoogle = w.adsbygoogle || [];
+      w.adsbygoogle.push({});
+    } catch (e) {}
+  }, []);
+  return (
+    <ins
+      className="adsbygoogle"
+      style={{ display: 'block' }}
+      data-ad-client="ca-pub-9011514285034166"
+      data-ad-slot={adSlot}
+      data-ad-format="auto"
+      data-full-width-responsive="true"
+    />
   );
 }
