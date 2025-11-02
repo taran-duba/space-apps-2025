@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
+import { Circles } from "react-loader-spinner";
 
 const palette = {
   midnight: "#0A0424",
@@ -25,36 +26,50 @@ export default function Navbar() {
   const displayAvatarUrl = avatarUrl ? `${avatarUrl}?v=${encodeURIComponent(avatarVersion)}` : avatarUrl;
 
   if (loading) {
-    return null; // Or a loading spinner
+    return <Circles
+      height="80"
+      width="80"
+      color="#4fa94d"
+      ariaLabel="circles-loading"
+      wrapperStyle={{}}
+      wrapperClass=""
+      visible={true}
+    />; // Or a loading spinner
   }
 
   const isHomePage = pathname === "/";
 
   return (
     <header className="sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-white/0">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        <Link href="/" className="flex items-center gap-3">
-          <Image src={"/favicon.png"} width={32} height={32}alt="Environauts Logo" className="h-9 w-9 rounded-2xl" />
-          <span className="text-lg font-semibold tracking-tight" style={{ color: palette.ice }}>Environauts Presents...</span>
-        </Link>
-        <nav className="hidden gap-8 md:flex">
-          {isHomePage && (
-            <>
-              <Link href="#about" className="text-sm text-white/80 transition hover:text-white">About Us</Link>
-              <Link href="#features" className="text-sm text-white/80 transition hover:text-white">Features</Link>
-              <Link href="#faq" className="text-sm text-white/80 transition hover:text-white">FAQ</Link>
-              <Link href="#contact" className="text-sm text-white/80 transition hover:text-white">Contact Us</Link>
-            </>
-          )}
-          {user && (
-            <>
-              <Link href="/dashboard" className="text-sm text-white/80 transition hover:text-white">Dashboard</Link>
-              <Link href="/profile" className="text-sm text-white/80 transition hover:text-white">My Profile</Link>
-            </>
-          )}
+      <div className="mx-auto grid max-w-7xl grid-cols-3 items-center px-6 py-4">
+        <div className="flex justify-start">
+          <Link href="/" className="inline-flex items-center gap-3">
+            <Image src={"/favicon.png"} width={32} height={32} alt="Clairify Logo" className="h-9 w-9 rounded-2xl" />
+            <span className="text-lg font-semibold tracking-tight" style={{ color: palette.ice }}>Clairify</span>
+          </Link>
+        </div>
+
+        <nav className="flex justify-center">
+          <div className="flex items-center gap-8">
+            {isHomePage && (
+              <>
+                <Link href="#about" className="text-sm text-white/80 transition hover:text-white">About Us</Link>
+                <Link href="#features" className="text-sm text-white/80 transition hover:text-white">Features</Link>
+                <Link href="#faq" className="text-sm text-white/80 transition hover:text-white">FAQ</Link>
+                <Link href="#contact" className="text-sm text-white/80 transition hover:text-white">Contact Us</Link>
+              </>
+            )}
+            {user && (
+              <>
+                <Link href="/dashboard" className="text-sm text-white/80 transition hover:text-white">Dashboard</Link>
+                <Link href="/profile" className="text-sm text-white/80 transition hover:text-white">My Profile</Link>
+              </>
+            )}
+          </div>
         </nav>
-        <div className="flex items-center gap-3">
-          {user ? (
+        <div className="flex justify-end">
+          <div className="flex items-center gap-3">
+            {user ? (
             <div className="flex items-center gap-3">
               <Image
                 src={displayAvatarUrl}
@@ -66,7 +81,7 @@ export default function Navbar() {
               <span className="hidden text-sm text-white/80 md:inline-block">
                 {displayName}
               </span>
-              <Button 
+              <Button
                 onClick={signOut}
                 className="inline-flex items-center gap-2"
                 style={{ backgroundColor: palette.steel, color: palette.ice }}
@@ -88,6 +103,7 @@ export default function Navbar() {
               </Link>
             </>
           )}
+          </div>
         </div>
       </div>
     </header>

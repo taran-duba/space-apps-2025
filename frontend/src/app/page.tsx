@@ -134,6 +134,23 @@ export default function Home(): JSX.Element {
       </section>
 
       <hr data-test="section-divider" className="border-t-4 border-white my-8 w-11/12 mx-auto opacity-80" />
+      
+      <footer className="w-full py-6 text-center">
+        <div className="container mx-auto px-6">
+          <p className="text-sm text-white/70">
+            © {new Date().getFullYear()} Clairify. All rights reserved.
+            {' '}
+            <Link 
+              href="/privacy-policy" 
+              className="underline hover:text-white transition-colors"
+              style={{ color: palette.ice }}
+            >
+              Privacy Policy
+            </Link>
+          </p>
+        </div>
+      </footer>
+      
       <LandbotChat />
     </main>
   );
