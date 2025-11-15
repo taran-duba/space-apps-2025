@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { toast } from "sonner";
+import Script from "next/script";
 
 // Helper component to safely read search params within a Suspense boundary
 function RedirectFromParams({ setRedirectTo }: { setRedirectTo: React.Dispatch<React.SetStateAction<string>> }) {
@@ -98,91 +99,125 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-[#0A0424] to-[#18314F] text-white flex items-center justify-center p-6">
-      <Card className="w-full max-w-sm border-white/20 bg-[#18314F] text-white shadow-xl">
-        <CardHeader>
-          <CardTitle className="text-center text-2xl">Login</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {/* Suspense boundary required for hooks like useSearchParams during prerender */}
-          <Suspense fallback={null}>
-            <RedirectFromParams setRedirectTo={setRedirectTo} />
-          </Suspense>
-          {showUnverifiedNote && (
-            <div className="mb-4 rounded-md border border-amber-300/60 bg-amber-100/10 px-3 py-2 text-amber-200">
-              Please verify your email to sign in. Check your inbox for the confirmation link.
-            </div>
-          )}
-          {showBadPasswordNote && (
-            <div className="mb-4 rounded-md border border-red-300/60 bg-red-100/10 px-3 py-2 text-red-200">
-              Incorrect email or password. Please try again.
-            </div>
-          )}
-          <form onSubmit={handleSubmit} className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="email" className="text-white">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="bg-[#384E77] text-white placeholder-white/70 border-white focus-visible:ring-white"
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="password" className="text-white">Password</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={show ? "text" : "password"}
-                  placeholder="Enter your password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="bg-[#384E77] text-white placeholder-white/70 border-white pr-24 focus-visible:ring-white"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-1.5 top-1/2 -translate-y-1/2 text-white hover:bg-white/10"
-                  onClick={() => setShow((s) => !s)}
-                >
-                  {show ? "Hide" : "Show"}
-                </Button>
+      <Script
+        async
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9011514285034166"
+        crossOrigin="anonymous"
+        strategy="afterInteractive"
+      />
+      <div className="flex w-full items-start justify-center gap-6">
+        <div className="hidden md:block w-[300px] max-w-[300px]">
+          <AdSenseUnit adSlot="6970351614" />
+        </div>
+        <Card className="w-full max-w-sm border-white/20 bg-[#18314F] text-white shadow-xl">
+          <CardHeader>
+            <CardTitle className="text-center text-2xl">Login</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {/* Suspense boundary required for hooks like useSearchParams during prerender */}
+            <Suspense fallback={null}>
+              <RedirectFromParams setRedirectTo={setRedirectTo} />
+            </Suspense>
+            {showUnverifiedNote && (
+              <div className="mb-4 rounded-md border border-amber-300/60 bg-amber-100/10 px-3 py-2 text-amber-200">
+                Please verify your email to sign in. Check your inbox for the confirmation link.
               </div>
+            )}
+            {showBadPasswordNote && (
+              <div className="mb-4 rounded-md border border-red-300/60 bg-red-100/10 px-3 py-2 text-red-200">
+                Incorrect email or password. Please try again.
+              </div>
+            )}
+            <form onSubmit={handleSubmit} className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="email" className="text-white">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="bg-[#384E77] text-white placeholder-white/70 border-white focus-visible:ring-white"
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="password" className="text-white">Password</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={show ? "text" : "password"}
+                    placeholder="Enter your password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="bg-[#384E77] text-white placeholder-white/70 border-white pr-24 focus-visible:ring-white"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 text-white hover:bg-white/10"
+                    onClick={() => setShow((s) => !s)}
+                  >
+                    {show ? "Hide" : "Show"}
+                  </Button>
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full bg-white text-[#0A0424] hover:bg-[#C7E8F3] font-semibold"
+                disabled={loading}
+              >
+                {loading ? "Signing in…" : "Sign In"}
+              </Button>
+            </form>
+
+            <div className="mt-4">
+              <Button
+                type="button"
+                onClick={handleGoogleSignIn}
+                className="w-full bg-[#EA4335] hover:bg-[#c83b2f] text-white font-semibold"
+                disabled={loading}
+              >
+                Continue with Google
+              </Button>
             </div>
 
-            <Button
-              type="submit"
-              className="w-full bg-white text-[#0A0424] hover:bg-[#C7E8F3] font-semibold"
-              disabled={loading}
-            >
-              {loading ? "Signing in…" : "Sign In"}
-            </Button>
-          </form>
-
-          <div className="mt-4">
-            <Button
-              type="button"
-              onClick={handleGoogleSignIn}
-              className="w-full bg-[#EA4335] hover:bg-[#c83b2f] text-white font-semibold"
-              disabled={loading}
-            >
-              Continue with Google
-            </Button>
-          </div>
-
-          <p className="mt-4 text-center text-white/90">
-            Don&apos;t have an account?{" "}
-            <Link href="/signup" className="underline underline-offset-4 decoration-white/70 hover:text-white">
-              Sign up here
-            </Link>
-          </p>
-        </CardContent>
-      </Card>
+            <p className="mt-4 text-center text-white/90">
+              Don&apos;t have an account?{" "}
+              <Link href="/signup" className="underline underline-offset-4 decoration-white/70 hover:text-white">
+                Sign up here
+              </Link>
+            </p>
+          </CardContent>
+        </Card>
+        <div className="hidden md:block w-[300px] max-w-[300px]">
+          <AdSenseUnit adSlot="6970351614" />
+        </div>
+      </div>
     </div>
+  );
+}
+
+function AdSenseUnit({ adSlot }: { adSlot: string }) {
+  useEffect(() => {
+    try {
+      const w = window as any;
+      w.adsbygoogle = w.adsbygoogle || [];
+      w.adsbygoogle.push({});
+    } catch (e) {}
+  }, []);
+  return (
+    <ins
+      className="adsbygoogle"
+      style={{ display: "block" }}
+      data-ad-client="ca-pub-9011514285034166"
+      data-ad-slot={adSlot}
+      data-ad-format="auto"
+      data-full-width-responsive="true"
+    />
   );
 }
